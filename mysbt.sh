@@ -52,17 +52,16 @@ Note : you can run all backup mode at once."
 #=======================================================================
 #       INIT
 #=======================================================================
-
 host="localhost"
 port="3306"
 login=""
 password=""
-backupDir=$PWD
-allDbInOneFile=false
-oneDbByFile=false
-oneTableByFile=false
-excludeDatabases=""
-mysqldump=`which mysqldump`
+backupdir=$PWD
+alldbinonefile=false
+onedbbyfile=false
+onetablebyfile=false
+excludedatabases=""
+mysqldump=$(which mysqldump)
 
 #check requirements
 if [ "$mysqldump" = "" ]
@@ -75,14 +74,14 @@ fi
 if [ $# -lt  1 ]
 then
 	errmsg="Missing arguments.
-    For more informations, use ${0} --help"
+    For more informations, use $0 --help"
 	usage
     exit 1
 fi
 
-if ! options=$(getopt -o h:P:l:p:adt -l backup-dir:,exclude-from:,help -- "$@")
+if ! options=$(getopt -o b:e:h:l:P:p:adt -l host:,login:,password:,port:,backup-dir:,exclude-from:,help,all-databases-in-one-file,one-database-by-file,one-table-by-file -- "$@")
 then
-    errmsg="${0} : arguments error"
+    errmsg="$0 : arguments error"
     exit 1
 fi
 
@@ -91,25 +90,25 @@ eval set -- $options
 while [ $# -gt 0 ]
 do
     case $1 in
-    -a) allDbInOneFile=true ;;
-    -d) oneDbByFile=true ;;
-    -t) oneTableByFile=true ;;
-    --exclude-from)
+    -a|--all-databases-in-one-file) alldbinonefile=true;;
+    -d|--one-database-by-file) onedbbyfile=true;;
+    -t|--one-table-by-file) onetablebyfile=true;;
+    -b|--backup-dir) backupdir="$2" ; shift;; 
+    -e|--exclude-from)
 		if [ -f $2 ]
             then
-                excludeDatabases="$(cat $2)" ;
+                excludedatabases="$(cat $2)" ;
             else
-                errmsg="${2} : Not Found for --exclude-from argument"
+                errmsg="$2 : Not Found for --exclude-from argument"
                 usage; exit 1;
 		fi;shift;;
-	--backup-dir) backupDir="$2" ; shift;; 
     --help) usage;options;exit 0;;
     -h|--host) host="$2" ; shift;;
     -l|--login) login="$2" ; shift;;
     -p|--password) password="$2" ; shift;;
     -P|--port) port="$2" ; shift;;
     (--) shift; break;;
-    (-*) errmsg="${1} : unrecognized option"; usage; exit 1;;
+    (-*) errmsg="$1 : unrecognized option"; usage; exit 1;;
     (*) break;;
     esac
     shift
@@ -118,45 +117,59 @@ done
 #	Execution
 #-----------------------------------------------------------------------
 #All databases in one file
-if [ "$allDbInOneFile" = "true" ] 
+if [ "$alldbinonefile" = "true" ] 
 then
-    $mysqldump -A -h $host -P $port -u $login -p$password > "$backupDir/all-databases.sql"
-fi
-#One database per file
-if [ "$oneDbByFile" = "true" ] 
-then
-    dbList="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
-    
-    for db in $dbList
+    if [ -f "$backupdir/all-databases.sql" ]
+    then
+        rm -f "$backupdir/all-databases.sql"
+    fi
+
+    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    for db in $dblist
     do
-        in_array $db ${excludeDatabases}
+        in_array $db $excludedatabases
         inarray=$?
         if [ $inarray != 0 ]
         then
-            $mysqldump -h $host -P $port -u $login -p$password $db > "$backupDir/$db.sql"
+            $mysqldump -h $host -P $port -u $login -p$password $db >> "$backupdir/all-databases.sql"
+        fi
+    done
+fi
+#One database per file
+if [ "$onedbbyfile" = "true" ] 
+then
+    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    
+    for db in $dblist
+    do
+        in_array $db $excludedatabases
+        inarray=$?
+        if [ $inarray != 0 ]
+        then
+            $mysqldump -h $host -P $port -u $login -p$password $db > "$backupdir/$db.sql"
         fi
     done
 fi
 #One table per file
-if [ "$oneTableByFile" = "true" ]
+if [ "$onetablebyfile" = "true" ]
 then
-    dbList="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
 
-    for db in $dbList
+    for db in $dblist
     do
-        in_array $db ${excludeDatabases}
+        in_array $db $excludedatabases
         inarray=$?
         if [ $inarray != 0 ]
         then
-            if [ -d "$backupDir/$db" ];
+            if [ -d "$backupdir/$db" ];
                 then
-                    rm -rf "$backupDir/$db"
+                    rm -rf "$backupdir/$db"
             fi
-            mkdir "$backupDir/$db"
-            tableList="$(mysql -u $login -h $host -p$password -P$port $db -Bse 'show tables')"
-            for table in $tableList
+            mkdir "$backupdir/$db"
+            tablelist="$(mysql -u $login -h $host -p$password -P$port $db -Bse 'show tables')"
+            for table in $tablelist
             do
-                $mysqldump -h $host -P $port -u $login -p$password $db $table > "$backupDir/$db/$table.sql"
+                $mysqldump -h $host -P $port -u $login -p$password $db $table > "$backupdir/$db/$table.sql"
             done
         fi
     done
