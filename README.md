@@ -21,23 +21,20 @@ The following options can be passed to the script for connecting to mysql.
     -t, --one-table-by-file          make a directory for each database
                                      and one file by table  
 * Others options
+    -b, --backup-dir=path            path to backup directory
+    -e, --exclude-from=file-path     file containing tables to ignore
     -h, --host=name                  default value : localhost
     -l, --login=login
     -p, --password=password
     -P, --port=port                  default value : 3306
     --help                           display this menu
-    --backup-dir=path                path to backup directory
-    --exclude-from=file-path        file containing tables to ignore    
-    
 Note : you can run all backup mode at once.
 
 Example
 -------
 * Script call
-    $ ./mysbt.sh -a u login -p password					#dump all database in one file in current directory
-    $ ./mysbt.sh -d -u login -p password --backup-dir=/backup/directory 	#dump all database in /backup/directory. One database per file. 
+    $ ./mysbt.sh -a u login -p password #dump all database in one file in current directory
+    $ ./mysbt.sh -d -u login -p password --backup-dir=/backup/directory #dump all database in /backup/directory. One database per file. 
     $ ./mysbt.sh -t -u login -p password --backup-dir=/backup/directory --exclude-from=/path/to/database.exclude #dump all database (except defined in /path/to/database.exclude) in /backup/directory. For each database a directory is created and all tables are dumped separatly .
 * Exclude file
-    information_schema
-    mysql
-    performance_schema
+    information_schema mysql performance_schema
