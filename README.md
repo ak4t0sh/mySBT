@@ -27,7 +27,7 @@ The following options can be passed to the script for connecting to mysql.
         --help                           display this menu
 __Note :__ you can run all backup mode at once.
 
-# Example
+## Example
 * Script call
 
         $ ./mysbt.sh -a u login -p password #dump all database in one file in current directory
