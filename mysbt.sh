@@ -22,10 +22,11 @@ in_array() {
     done
     return 1
 }
-#Print script usage
+# Print script usage
 usage() {
     echo "mySQL Backup Tool"
-	echo "Usage : $0 [OPTIONS]"
+	echo "Usage : $0 [OPTIONS]
+For more informations, use $0 --help"
     echo $errmsg
 }
 #Print options and requirements
@@ -123,6 +124,16 @@ done
 #-----------------------------------------------------------------------
 #	Execution
 #-----------------------------------------------------------------------
+if [ ! -d $backupdir ]
+then
+    mkdir -p $backupdir > /dev/null 2>&1 || { errmsg="Failed to create : $backupdir"; usage; exit 1; }
+else
+    if [ ! -w $backupdir ]
+    then
+        chmod +w $backupdir > /dev/null 2>&1 || { errmsg="Directory not writable : $backupdir"; usage; exit 1; }
+    fi
+fi
+
 #All databases in one file
 if [ "$alldbinonefile" = "true" ] 
 then
