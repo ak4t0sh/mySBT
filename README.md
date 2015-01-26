@@ -31,9 +31,9 @@ __Note :__ you can run all backup mode at once.
 ## Example
 * Script call
 
-        $ ./mysbt.sh -a u login -p password #dump all database in one file in current directory
-        $ ./mysbt.sh -d -u login -p password --backup-dir=/backup/directory #dump all database in /backup/directory. One database per file.
-        $ ./mysbt.sh -t -u login -p password --backup-dir=/backup/directory --exclude-from=/path/to/database.exclude #dump all database (except defined in /path/to/database.exclude) in /backup/directory. For each database a directory is created and all tables are dumped separatly .
+        $ ./mysbt.sh -a -l login -p password #dump all database in one file in current directory
+        $ ./mysbt.sh -d -l login -p password --backup-dir=/backup/directory #dump all database in /backup/directory. One database per file.
+        $ ./mysbt.sh -t -l login -p password --backup-dir=/backup/directory --exclude-from=/path/to/database.exclude #dump all database (except defined in /path/to/database.exclude) in /backup/directory. For each database a directory is created and all tables are dumped separatly .
 
 * Exclude file content
 
