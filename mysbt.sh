@@ -30,7 +30,7 @@ usage() {
 }
 #Print options and requirements
 options() {
-    echo "Requirement : mysqldump
+    echo "Requirement : mysql, mysqldump
 ------------------------------------------------------------------------
 Options
   Backup mode
@@ -61,9 +61,16 @@ alldbinonefile=false
 onedbbyfile=false
 onetablebyfile=false
 excludedatabases=""
+mysql=$(which mysql)
 mysqldump=$(which mysqldump)
 
 #check requirements
+if [ "$mysql" = "" ]
+then
+    errmsg="mysql not found"
+    usage
+    exit 1
+fi
 if [ "$mysqldump" = "" ]
 then
     errmsg="mysqldump not found"
@@ -124,7 +131,7 @@ then
         rm -f "$backupdir/all-databases.sql"
     fi
 
-    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    dblist="$($mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
     for db in $dblist
     do
         in_array $db $excludedatabases
@@ -138,7 +145,7 @@ fi
 #One database per file
 if [ "$onedbbyfile" = "true" ] 
 then
-    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    dblist="$($mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
     
     for db in $dblist
     do
@@ -153,7 +160,7 @@ fi
 #One table per file
 if [ "$onetablebyfile" = "true" ]
 then
-    dblist="$(mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
+    dblist="$($mysql -u $login -h $host -p$password -P$port -Bse 'show databases')"
 
     for db in $dblist
     do
@@ -166,7 +173,7 @@ then
                     rm -rf "$backupdir/$db"
             fi
             mkdir "$backupdir/$db"
-            tablelist="$(mysql -u $login -h $host -p$password -P$port $db -Bse 'show tables')"
+            tablelist="$($mysql -u $login -h $host -p$password -P$port $db -Bse 'show tables')"
             for table in $tablelist
             do
                 $mysqldump -h $host -P $port -u $login -p$password $db $table > "$backupdir/$db/$table.sql"

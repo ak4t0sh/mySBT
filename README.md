@@ -7,6 +7,7 @@ The current running directory is used if not specified.
 ## Requirements
 The following dependencies are required :
 
+* mysql
 * mysqldump
 
 ## Script Arguments
