@@ -124,6 +124,8 @@ done
 #-----------------------------------------------------------------------
 #	Execution
 #-----------------------------------------------------------------------
+umask u=rwx,g=,o=
+
 if [ ! -d $backupdir ]
 then
     mkdir -p $backupdir > /dev/null 2>&1 || { errmsg="Failed to create : $backupdir"; usage; exit 1; }
